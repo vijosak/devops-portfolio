@@ -12,20 +12,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Build and start services
+      - name: Build images
         run: |
           cd ci-cd-pipeline
-          docker compose up -d --build
+          docker compose build
       
-      - name: Wait for app to be healthy
+      - name: Start DB and run migrations
         run: |
           cd ci-cd-pipeline
+          docker compose up -d db
+          # Make sure DB is healthy
+          for i in $(seq 1 10); do
+            if docker compose ps db | grep -q "healthy"; then
+              echo "DB healthy"
+              break
+            fi
+            sleep 3
+          done
+          # Run migrations
+          docker compose run --rm web python portfolio/manage.py migrate
+      
+      - name: Start the web service
+        run: |
+          cd ci-cd-pipeline
+          docker compose up -d web
+          # Wait for app to be healthy
           for i in $(seq 1 12); do
             if docker compose ps web | grep -q "healthy"; then
               echo "Web is healthy"
               break
             fi
-            echo "Waiting for web... ($i)"
             sleep 5
           done
       

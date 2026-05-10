@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Create shared Docker network
-        run: docker network create monitoring
+        run: docker network create monitoring || true
       - name: Start Django + DB
         env:
           DB_USER: ${{ secrets.DB_USER }}
@@ -22,19 +22,24 @@ jobs:
           cd ci-cd-pipeline
           docker compose up -d --build
           for i in $(seq 1 12); do
-            if docker compose ps web | grep -q "healthy"; then break; fi
+            if docker compose ps web | grep -q "Up"; then break; fi
             sleep 5
           done
+          sleep 5
       - name: Start monitoring stack
         run: |
           cd monitoring
           docker compose up -d
           sleep 10
+      - name: Debug – show Prometheus targets
+        run: |
+          echo "=== Prometheus targets ==="
+          curl -s http://localhost:9090/api/v1/targets | jq .
       - name: Verify Prometheus scrapes Django
         run: |
-          curl -s http://localhost:9090/api/v1/targets | jq ".data.activeTargets[] | select(.labels.job==\"django\") | .health" | grep -q "up"
+          curl -s http://localhost:9090/api/v1/targets | jq -e ".data.activeTargets[] | select(.labels.job==\"django\") | .health" | grep -q "up"
       - name: Show logs on failure
         if: failure()
         run: |
-          cd ci-cd-pipeline && docker compose logs
-          cd monitoring && docker compose logs
+          docker compose -f ci-cd-pipeline/docker-compose.yml logs
+          docker compose -f monitoring/docker-compose.yml logs

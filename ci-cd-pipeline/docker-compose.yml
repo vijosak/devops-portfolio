@@ -28,6 +28,11 @@ services:
     mem_limit: 256m
     volumes:
       - .:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

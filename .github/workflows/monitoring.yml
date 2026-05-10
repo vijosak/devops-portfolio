@@ -4,20 +4,37 @@ name: Monitoring CI
     branches: [ main ]
     paths:
       - "monitoring/**"
+      - "ci-cd-pipeline/**"
   workflow_dispatch:
  jobs:
-  test-monitoring:
+  test-end-to-end:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Create shared Docker network
+        run: docker network create monitoring
+      - name: Start Django + DB
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          cd ci-cd-pipeline
+          docker compose up -d --build
+          for i in $(seq 1 12); do
+            if docker compose ps web | grep -q "healthy"; then break; fi
+            sleep 5
+          done
       - name: Start monitoring stack
         run: |
           cd monitoring
           docker compose up -d
-          sleep 15
-      - name: Verify Prometheus is scraping itself
+          sleep 10
+      - name: Verify Prometheus scrapes Django
         run: |
-          curl -s http://localhost:9090/api/v1/targets | jq ".data.activeTargets[] | select(.labels.job==\"prometheus\") | .health" | grep -q "up"
+          curl -s http://localhost:9090/api/v1/targets | jq ".data.activeTargets[] | select(.labels.job==\"django\") | .health" | grep -q "up"
       - name: Show logs on failure
         if: failure()
-        run: cd monitoring && docker compose logs
+        run: |
+          cd ci-cd-pipeline && docker compose logs
+          cd monitoring && docker compose logs

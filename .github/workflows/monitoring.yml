@@ -18,7 +18,8 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           cd ci-cd-pipeline
-          docker compose up -d --build
+          docker compose build --no-cache
+          docker compose up -d
           for i in $(seq 1 12); do
             if docker compose ps web | grep -q "Up"; then break; fi
             sleep 5
@@ -27,6 +28,7 @@ jobs:
       - name: Start monitoring stack
         run: |
           cd monitoring
+          docker compose build --no-cache
           docker compose up -d
           sleep 10
       - name: Wait for Prometheus to scrape Django

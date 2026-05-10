@@ -25,16 +25,21 @@ Each sub‑folder has its own `README.md` with detailed steps.
 ```bash
 cd ci-cd-pipeline
 docker compose up --build
-Credentials:
+```
 
-Local dev: defaults work out of the box.
+**Credentials:**
+- **Local dev**: defaults work out of the box.
+- **Real secrets (optional)**: copy `.env.example` to `.env`, fill your values, then `docker compose --env-file .env up`.
+- **CI/CD**: secrets are stored in GitHub Actions and injected into the pipeline automatically.
 
-Real secrets (optional): copy .env.example to .env, fill your values, then docker compose --env-file .env up.
+---
 
-CI/CD: secrets are stored in GitHub Actions and injected into the pipeline automatically.
+## 📊 Pipeline Status
 
-📊 Pipeline Status
 [![CI/CD](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/ci-cd.yml)
 
-📜 License
+---
+
+## 📜 License
+
 MIT

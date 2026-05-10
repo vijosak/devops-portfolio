@@ -2,13 +2,13 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: portfoliodb
-      POSTGRES_USER: portfolio
-      POSTGRES_PASSWORD: portfolio123
+      POSTGRES_DB: ${DB_NAME:-portfoliodb}
+      POSTGRES_USER: ${DB_USER:-portfolio}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-portfolio123}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfoliodb"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-portfolio} -d ${DB_NAME:-portfoliodb}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -21,18 +21,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgres://portfolio:portfolio123@db:5432/portfoliodb
+      DATABASE_URL: postgres://${DB_USER:-portfolio}:${DB_PASSWORD:-portfolio123}@db:5432/${DB_NAME:-portfoliodb}
     depends_on:
       db:
         condition: service_healthy
     mem_limit: 256m
     volumes:
       - .:/app
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
 volumes:
   postgres_data:

@@ -12,4 +12,6 @@ COPY . .
 RUN chmod +x wait-for-db.sh
 
 EXPOSE 8000
-CMD ["./wait-for-db.sh", "db", "5432", "portfolio", "portfolio123", "gunicorn", "portfolio.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+# Use environment variables for the database connection
+CMD ["sh", "-c", "./wait-for-db.sh db 5432 ${DB_USER} ${DB_PASSWORD} gunicorn portfolio.wsgi:application --bind 0.0.0.0:8000"]

@@ -11,13 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build images
         run: |
           cd ci-cd-pipeline
           docker compose build
-      
+
       - name: Start DB and run migrations
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           cd ci-cd-pipeline
           docker compose up -d db
@@ -29,19 +33,23 @@ jobs:
             sleep 3
           done
           docker compose run --rm web python manage.py migrate
-      
+
       - name: Start web service
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           cd ci-cd-pipeline
           docker compose up -d web
           sleep 15
-      
+
       - name: Test HTTP response
         run: |
           response=$(curl -s http://localhost:8000)
           echo "Response: $response"
           echo "$response" | grep "Hello DevOps Portfolio!"
-      
+
       - name: Show logs (on failure)
         if: failure()
         run: |

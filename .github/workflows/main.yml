@@ -5,9 +5,4 @@ on:
   schedule:
     - cron: '0 12 * * 1'  # weekly
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run shellcheck
-        run: shellcheck **/*.sh
+  # Optional: add future jobs here

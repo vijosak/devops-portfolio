@@ -1,9 +1,21 @@
-- name: Lint shell scripts
-  run: |
-    shopt -s nullglob
-    files=( *.sh )
-    if [ ${#files[@]} -gt 0 ]; then
-      shellcheck "${files[@]}"
-    else
-      echo "No .sh files to check"
-    fi
+name: Portfolio CI
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 12 * * 1'   # runs weekly
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint shell scripts (skip if none)
+        run: |
+          shopt -s nullglob
+          files=( *.sh )
+          if [ ${#files[@]} -gt 0 ]; then
+            shellcheck "${files[@]}"
+          else
+            echo "No .sh files found, skipping lint"
+          fi

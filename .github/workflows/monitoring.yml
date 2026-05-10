@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create shared Docker network
-        run: docker network create monitoring || true
       - name: Start Django + DB
         env:
           DB_USER: ${{ secrets.DB_USER }}
@@ -26,38 +24,25 @@ jobs:
             sleep 5
           done
           sleep 5
-      - name: Get web container IP
-        run: |
-          WEB_IP=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" $(docker compose -f ci-cd-pipeline/docker-compose.yml ps -q web))
-          echo "WEB_IP=$WEB_IP"
-          echo "WEB_IP=$WEB_IP" >> $GITHUB_ENV
-      - name: Generate Prometheus config with web IP
-        run: |
-          mkdir -p /tmp/prometheus
-          cat > /tmp/prometheus/prometheus.yml << EOF
-          global:
-            scrape_interval: 15s
-          scrape_configs:
-            - job_name: "prometheus"
-              static_configs:
-                - targets: ["localhost:9090"]
-            - job_name: "django"
-              static_configs:
-                - targets: ["${WEB_IP}:8000"]
-          EOF
       - name: Start monitoring stack
         run: |
           cd monitoring
-          export PROMETHEUS_CONFIG="/tmp/prometheus/prometheus.yml"
-          docker compose -f docker-compose.yml up -d
+          docker compose up -d
           sleep 10
-      - name: Debug – show Prometheus targets
+      - name: Wait for Prometheus to scrape Django
         run: |
-          echo "=== Prometheus targets ==="
-          curl -s http://localhost:9090/api/v1/targets | jq .
-      - name: Verify Prometheus scrapes Django
-        run: |
-          curl -s http://localhost:9090/api/v1/targets | jq -e ".data.activeTargets[] | select(.labels.job==\"django\") | .health" | grep -q "up"
+          echo "Waiting for Prometheus to complete first scrape..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s http://localhost:9090/api/v1/targets | jq -r ".data.activeTargets[] | select(.labels.job==\"django\") | .health")
+            echo "Attempt $i: Django target health = $STATUS"
+            if [ "$STATUS" = "up" ]; then
+              echo "Target is UP."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Target failed to become up within 60s."
+          exit 1
       - name: Show logs on failure
         if: failure()
         run: |

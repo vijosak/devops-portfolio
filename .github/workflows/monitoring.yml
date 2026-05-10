@@ -1,12 +1,12 @@
 name: Monitoring CI
- on:
+on:
   push:
     branches: [ main ]
     paths:
       - "monitoring/**"
       - "ci-cd-pipeline/**"
   workflow_dispatch:
- jobs:
+jobs:
   test-end-to-end:
     runs-on: ubuntu-latest
     steps:

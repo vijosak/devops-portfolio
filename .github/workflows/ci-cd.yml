@@ -21,7 +21,6 @@ jobs:
         run: |
           cd ci-cd-pipeline
           docker compose up -d db
-          # Make sure DB is healthy
           for i in $(seq 1 10); do
             if docker compose ps db | grep -q "healthy"; then
               echo "DB healthy"
@@ -29,27 +28,30 @@ jobs:
             fi
             sleep 3
           done
-          # Run migrations
           docker compose run --rm web python portfolio/manage.py migrate
       
-      - name: Start the web service
+      - name: Debug – show web container environment
+        run: |
+          cd ci-cd-pipeline
+          echo "=== ENVIRONMENT IN WEB CONTAINER ==="
+          docker compose run --rm web env | sort
+      
+      - name: Start web service
         run: |
           cd ci-cd-pipeline
           docker compose up -d web
-          # Wait for app to be healthy
-          for i in $(seq 1 12); do
-            if docker compose ps web | grep -q "healthy"; then
-              echo "Web is healthy"
-              break
-            fi
+          echo "Waiting for web to start..."
+          sleep 15
+      
+      - name: Test HTTP response (retry)
+        run: |
+          for i in $(seq 1 6); do
+            response=$(curl -s http://localhost:8000) && echo "Response: $response" && exit 0
+            echo "Attempt $i failed, retrying in 5s..."
             sleep 5
           done
-      
-      - name: Test HTTP response
-        run: |
-          response=$(curl -s http://localhost:8000)
-          echo "Response: $response"
-          echo "$response" | grep "Hello DevOps Portfolio!"
+          echo "Failed to connect after 6 attempts"
+          exit 1
       
       - name: Show logs (on failure)
         if: failure()

@@ -1,0 +1,23 @@
+name: Monitoring CI
+ on:
+  push:
+    branches: [ main ]
+    paths:
+      - "monitoring/**"
+  workflow_dispatch:
+ jobs:
+  test-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start monitoring stack
+        run: |
+          cd monitoring
+          docker compose up -d
+          sleep 15
+      - name: Verify Prometheus is scraping itself
+        run: |
+          curl -s http://localhost:9090/api/v1/targets | jq ".data.activeTargets[] | select(.labels.job==\"prometheus\") | .health" | grep -q "up"
+      - name: Show logs on failure
+        if: failure()
+        run: cd monitoring && docker compose logs

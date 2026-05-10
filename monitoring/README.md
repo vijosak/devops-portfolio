@@ -15,12 +15,20 @@ docker compose up -d
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000
 
-To scrape the Django app, first start the `ci-cd-pipeline` stack, then adjust `prometheus.yml` target to `host.docker.internal:8000` or `172.17.0.1:8000` depending on your OS.
+## Credentials & Environment
+
+- Default Grafana credentials are **admin / admin**.
+- To change the Grafana password, set the `GRAFANA_PASSWORD` environment variable before starting:
+  ```bash
+  export GRAFANA_PASSWORD=MySecurePassword
+  docker compose up -d
+  ```
+- In CI, the Grafana password is not injected; it uses the safe default. If real secrets are needed, add a `GRAFANA_PASSWORD` GitHub secret and pass it to the workflow step.
 
 ## CI Testing
 
 The pipeline (`.github/workflows/monitoring.yml`) does the following:
-1. Starts the Django app (with PostgreSQL).
-2. Starts Prometheus & Grafana.
+1. Starts the Django app (with PostgreSQL) – database credentials are injected from GitHub Secrets.
+2. Starts Prometheus & Grafana (no secrets required).
 3. Waits for up to 60s until Prometheus reports the `django` target as `up`.
 4. Fails if the scrape never succeeds, printing logs for debugging.

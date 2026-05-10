@@ -22,6 +22,9 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgres://${DB_USER:-portfolio}:${DB_PASSWORD:-portfolio123}@db:5432/${DB_NAME:-portfoliodb}
+      DB_USER: ${DB_USER:-portfolio}
+      DB_PASSWORD: ${DB_PASSWORD:-portfolio123}
+      DB_NAME: ${DB_NAME:-portfoliodb}
     depends_on:
       db:
         condition: service_healthy

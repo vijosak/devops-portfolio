@@ -14,19 +14,20 @@ graph TD
     C -->|deployed on| E[Kubernetes]
     A -->|monitored by| F[Prometheus & Grafana]
     A -->|secrets managed via| G[GitHub Secrets]
-    H[terraform-aws] -->|provisions| I[AWS EC2 / VPC]
+    H[terraform-aws] -->|provisions| I[AWS VPC, RDS]
     J[sre-playbook] -->|defines| K[SLIs/SLOs]
     L[project-management] -->|tracks| M[Agile board, risks]
+    F -->|scrapes metrics from| C
 ```
 
 ## Project Structure
 
 | Directory | Purpose | Key Technologies |
 |-----------|---------|------------------|
-| `ci-cd-pipeline/` | Django application with full CI/CD; secrets injected via environment | Django, PostgreSQL, Docker Compose, GitHub Actions |
-| `terraform-aws/` | Infrastructure as Code (AWS resources) | Terraform, AWS |
-| `k8s-manifests/` | Kubernetes manifests for the Django app | Kubernetes, Docker |
-| `monitoring/` | Observability stack | Prometheus, Grafana, Docker |
+| `ci-cd-pipeline/` | Django application with full CI/CD; Prometheus metrics exposed at `/metrics` | Django, PostgreSQL, Docker Compose, GitHub Actions, Prometheus |
+| `terraform-aws/` | Infrastructure as Code (VPC, subnet, RDS) | Terraform, AWS |
+| `k8s-manifests/` | Kubernetes manifests for the Django app, tested with kind in CI | Kubernetes, kind, Docker |
+| `monitoring/` | Observability stack – Prometheus scrapes the Django app, Grafana for dashboards | Prometheus, Grafana, Docker |
 | `sre-playbook/` | SRE documents (SLO definitions, runbooks, incident response) | Markdown |
 | `project-management/` | Project management artifacts | Markdown |
 
@@ -39,6 +40,13 @@ graph TD
 5. **Service startup**: The web container starts with `gunicorn`.
 6. **Test**: `curl` verifies the home page returns “Hello DevOps Portfolio!”.
 7. **Secrets**: Database credentials are injected from GitHub Actions Secrets; they are never stored in code.
+
+## Monitoring Integration
+
+- The Django app exposes Prometheus metrics at `/metrics` using `django-prometheus`.
+- Prometheus is configured to scrape `172.17.0.1:8000` (the Docker host) so it can reach the web container in CI.
+- The Monitoring CI workflow (`.github/workflows/monitoring.yml`) starts both stacks, then waits up to 60s for Prometheus to report the `django` target as `up`.
+- Grafana is pre‑configured but dashboards are not yet imported – a future enhancement.
 
 ## Security & Secrets Management
 
@@ -54,5 +62,4 @@ Each sub‑project has its own `README.md`. For the main Django application:
 cd ci-cd-pipeline
 docker compose up --build
 ```
-
-The architecture encourages modularity – each project can be used independently or combined to demonstrate a full DevOps toolchain.
+To also run monitoring, start the `monitoring` stack, then open Grafana at `http://localhost:3000` (admin/admin). Prometheus will scrape both itself and the Django app on `host.docker.internal:8000` (or `172.17.0.1:8000` on Linux).

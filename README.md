@@ -8,10 +8,10 @@ Projects covering **DevOps**, **Cloud**, **SRE**, and **Project Management**.
 
 | Project | Description | Tech |
 |---------|-------------|------|
-| [ci-cd-pipeline](./ci-cd-pipeline/) | Django + PostgreSQL, CI/CD with GitHub Actions | Django, PostgreSQL, Docker Compose, GitHub Actions |
-| [terraform-aws](./terraform-aws/) | AWS EC2 via Terraform (expanding) | Terraform, AWS |
-| [k8s-manifests](./k8s-manifests/) | K8s deployment, service, ingress for the app | Kubernetes |
-| [monitoring](./monitoring/) | Prometheus + Grafana with Docker Compose | Prometheus, Grafana, Docker |
+| [ci-cd-pipeline](./ci-cd-pipeline/) | Django + PostgreSQL, CI/CD with GitHub Actions, Prometheus metrics | Django, PostgreSQL, Docker Compose, GitHub Actions, Prometheus |
+| [terraform-aws](./terraform-aws/) | VPC, subnet, security group, RDS via Terraform | Terraform, AWS |
+| [k8s-manifests](./k8s-manifests/) | K8s deployment, service, ingress – tested in CI with kind | Kubernetes, kind |
+| [monitoring](./monitoring/) | Prometheus + Grafana, scrapes Django app | Prometheus, Grafana, Docker |
 | [sre-playbook](./sre-playbook/) | SLO definitions, runbooks, incident response | SRE practices |
 | [project-management](./project-management/) | Agile board, risk register, stakeholder comms | Agile, Risk |
 
@@ -36,7 +36,11 @@ docker compose up --build
 
 ## 📊 Pipeline Status
 
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/ci-cd.yml)
+| Pipeline | Status |
+|----------|--------|
+| Django CI/CD | [![CI/CD](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/ci-cd.yml) |
+| Monitoring CI | [![Monitoring](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/monitoring.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/monitoring.yml) |
+| Kubernetes CI | [![Kubernetes](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/k8s.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/k8s.yml) |
 
 ---
 

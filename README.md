@@ -34,7 +34,7 @@ Real secrets (optional): copy .env.example to .env, fill your values, then docke
 CI/CD: secrets are stored in GitHub Actions and injected into the pipeline automatically.
 
 📊 Pipeline Status
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/ci-cd.yml)
+https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main
 
 📜 License
 MIT

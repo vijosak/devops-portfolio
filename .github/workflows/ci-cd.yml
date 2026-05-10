@@ -28,30 +28,19 @@ jobs:
             fi
             sleep 3
           done
-          docker compose run --rm web python portfolio/manage.py migrate
-      
-      - name: Debug – show web container environment
-        run: |
-          cd ci-cd-pipeline
-          echo "=== ENVIRONMENT IN WEB CONTAINER ==="
-          docker compose run --rm web env | sort
+          docker compose run --rm web python manage.py migrate
       
       - name: Start web service
         run: |
           cd ci-cd-pipeline
           docker compose up -d web
-          echo "Waiting for web to start..."
           sleep 15
       
-      - name: Test HTTP response (retry)
+      - name: Test HTTP response
         run: |
-          for i in $(seq 1 6); do
-            response=$(curl -s http://localhost:8000) && echo "Response: $response" && exit 0
-            echo "Attempt $i failed, retrying in 5s..."
-            sleep 5
-          done
-          echo "Failed to connect after 6 attempts"
-          exit 1
+          response=$(curl -s http://localhost:8000)
+          echo "Response: $response"
+          echo "$response" | grep "Hello DevOps Portfolio!"
       
       - name: Show logs (on failure)
         if: failure()

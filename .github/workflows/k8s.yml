@@ -1,0 +1,44 @@
+name: Kubernetes CI
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "k8s-manifests/**"
+      - "ci-cd-pipeline/**"
+      - ".github/workflows/k8s.yml"
+  workflow_dispatch:
+jobs:
+  deploy-to-kind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: portfolio
+      - name: Build Docker image and load into kind
+        run: |
+          cd ci-cd-pipeline
+          docker compose build web
+          kind load docker-image ci-cd-pipeline-web --name portfolio
+      - name: Load PostgreSQL image into kind
+        run: |
+          docker pull postgres:15
+          kind load docker-image postgres:15 --name portfolio
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s-manifests/postgres-deployment.yaml
+          kubectl wait --for=condition=ready pod -l app=postgres --timeout=120s
+          kubectl apply -f k8s-manifests/deployment.yaml -f k8s-manifests/service.yaml
+      - name: Wait for deployment rollout
+        run: kubectl rollout status deployment/portfolio-app --timeout=120s
+      - name: Test service (port-forward and curl)
+        run: |
+          kubectl port-forward svc/portfolio-service 8001:80 &
+          sleep 5
+          curl -s http://localhost:8001 | grep "Hello DevOps Portfolio!"
+      - name: Clean up on failure
+        if: failure()
+        run: |
+          kubectl describe pods
+          kubectl logs -l app=portfolio

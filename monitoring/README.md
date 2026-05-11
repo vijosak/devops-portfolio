@@ -1,34 +1,35 @@
 # Monitoring Stack
 
-Docker Compose stack with **Prometheus** and **Grafana**.
+Docker Compose stack with **Prometheus**, **Grafana**, and **Loki**.
 
-## What it monitors
+## Components
 
-- **Prometheus** scrapes itself (`localhost:9090`) and the Django app (`172.17.0.1:8000` in CI, or `host.docker.internal:8000` locally).
-- **Grafana** is pre‑configured with a Prometheus datasource and a dashboard for Django metrics.
+- **Prometheus** scrapes Django metrics (`:8000/metmes`)
+- **Grafana** visualises metrics and logs (dashboards pre‑loaded)
+- **Loki** stores container logs
+- **Promtail** tails Docker logs and ships them to Loki
 
 ## Quickstart
 
 ```bash
 docker compose up -d
 ```
+- Grafana: http://localhost:3000 (admin/admin)
 - Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000 (admin/admin), then open the **Django App Metrics** dashboard.
+- Loki API: http://localhost:3100
 
-## Included Dashboard
+In Grafana, go to **Explore** → choose **Loki** datasource → query `{container="..."}` to search logs.
 
-`dashboards/django.json` contains panels for:
-- HTTP request rate per view and method
-- 5xx error rate gauge
+## Included Dashboards
 
-It is automatically loaded into Grafana on first start. You can modify it via the Grafana UI and export the updated JSON.
+`dashboards/django.json` – HTTP request rate, 5xx error gauge
+Edit via Grafana UI, then export the updated JSON.
 
-## Credentials & Environment
+## Credentials
 
-- Default Grafana credentials are **admin / admin**.
-- To change the Grafana password, set the `GRAFANA_PASSWORD` environment variable before starting.
-- In CI, the password is left as the safe default.
+- Default Grafana: **admin / admin**
+- To change: `export GRAFANA_PASSWORD=...` before `docker compose up`
 
 ## CI Testing
 
-The pipeline (`.github/workflows/monitoring.yml`) starts both stacks, waits for Prometheus to scrape the Django app, and verifies the target is `up`. Grafana is not tested directly in CI.
+The pipeline (`.github/workflows/monitoring.yml`) starts both stacks, waits for Prometheus to scrape the Django app, and verifies the `django` target is `up`.

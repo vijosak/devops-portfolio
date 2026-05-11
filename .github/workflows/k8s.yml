@@ -25,6 +25,17 @@ jobs:
         run: |
           docker pull postgres:15
           kind load docker-image postgres:15 --name portfolio
+      - name: Create Kubernetes secret from GitHub secrets
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          kubectl create secret generic postgres-secret \
+            --from-literal=POSTGRES_DB="$DB_NAME" \
+            --from-literal=POSTGRES_USER="$DB_USER" \
+            --from-literal=POSTGRES_PASSWORD="$DB_PASSWORD" \
+            --from-literal=DATABASE_URL="postgres://$DB_USER:$DB_PASSWORD@db:5432/$DB_NAME"
       - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f k8s-manifests/postgres-deployment.yaml

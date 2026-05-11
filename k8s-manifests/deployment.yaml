@@ -20,10 +20,22 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgres://portfolio:portfolio123@db:5432/portfoliodb"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DATABASE_URL
         - name: DB_USER
-          value: "portfolio"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
         - name: DB_PASSWORD
-          value: "portfolio123"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
         - name: DB_NAME
-          value: "portfoliodb"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_DB

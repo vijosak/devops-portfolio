@@ -8,7 +8,7 @@ Projects covering **DevOps**, **Cloud**, **SRE**, and **Project Management**.
 
 | Project | Description | Tech |
 |---------|-------------|------|
-| [ci-cd-pipeline](./ci-cd-pipeline/) | Django + PostgreSQL, CI/CD with GitHub Actions, Prometheus metrics | Django, PostgreSQL, Docker Compose, GitHub Actions, Prometheus |
+| [ci-cd-pipeline](./ci-cd-pipeline/) | Django + PostgreSQL, CI/CD, pushes Docker image to GHCR | Django, PostgreSQL, Docker Compose, GitHub Actions, GHCR |
 | [terraform-aws](./terraform-aws/) | VPC, subnet, security group, RDS via Terraform | Terraform, AWS |
 | [k8s-manifests](./k8s-manifests/) | K8s deployment, service, ingress – tested in CI with kind | Kubernetes, kind |
 | [monitoring](./monitoring/) | Prometheus + Grafana, scrapes Django app | Prometheus, Grafana, Docker |
@@ -38,7 +38,7 @@ docker compose up --build
 
 | Pipeline | Status |
 |----------|--------|
-| Django CI/CD | [![CI/CD](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/ci-cd.yml) |
+| Django CI/CD (push to GHCR) | [![CI/CD](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/ci-cd.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/ci-cd.yml) |
 | Monitoring CI | [![Monitoring](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/monitoring.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/monitoring.yml) |
 | Kubernetes CI | [![Kubernetes](https://img.shields.io/github/actions/workflow/status/vijosak/devops-portfolio/k8s.yml?branch=main)](https://github.com/vijosak/devops-portfolio/actions/workflows/k8s.yml) |
 

@@ -44,6 +44,10 @@ docker compose up --build
 
 ---
 
+## 📸 Screenshots
+
+![Grafana Dashboard](docs/grafana-dashboard.png)
+
 ## 📜 License
 
 MIT
